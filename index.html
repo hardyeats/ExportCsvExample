@@ -10,11 +10,114 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
     <script type="text/javascript">
+
+
+
       $(function() {
         $('#btnExport').on('click', function() {
-          
+          exportCsvFile(headers, itemsFormatted, fileTitle); // call the exportCSVFile() function to process the JSON and trigger the download
         });
       });
+
+
+      function convertToCsv(objArray) {
+        var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+        var csvString = '';
+
+        for (var i = 0; i < array.length; i++) {
+            var line = '';
+            for (var index in array[i]) {
+                if (line != '') line += ','
+
+                line += array[i][index];
+            }
+            csvString += line + '\r\n';
+        }
+        console.log(csvString);
+        return csvString;
+      }
+
+
+      function exportCsvFile(headers, items, fileTitle) {
+        if (headers) {
+          items.unshift(headers);
+        }
+
+        // Convert Object to JSON
+        var jsonObject = JSON.stringify(items);
+
+        var csv = this.convertToCsv(jsonObject);
+
+        var exportedFileName = fileTitle + '.csv' || 'export.csv';
+        console.log("[exportCSVFile] exportedFileName :");
+        console.log(exportedFileName);
+
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        if (navigator.msSaveBlob) { // IE 10+
+          navigator.msSaveBlob(blob, exportedFileName);
+        } else {
+          var link = document.createElement("a");
+          if (link.download !== undefined) { // feature detection
+            // Browsers that support HTML5 download attribute
+            var url = URL.createObjectURL(blob);
+            console.log("[exportCSVFile] url :");
+            console.log(url);
+            link.setAttribute("href", url);
+            link.setAttribute("download", exportedFileName);
+            link.style.visibility = 'hidden';
+            console.log("[exportCSVFile] link :");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+        }
+      }
+
+      var headers = {
+        model: 'Phone Model'.replace(/,/g, ''), // remove commas to avoid errors
+        chargers: "Chargers",
+        cases: "Cases",
+        earphones: "Earphones"
+      };
+
+      itemsNotFormatted = [
+        {
+          model: 'Samsung S7',
+          chargers: '55',
+          cases: '56',
+          earphones: '57',
+          scratched: '2'
+        },
+        {
+          model: 'Pixel XL',
+          chargers: '77',
+          cases: '78',
+          earphones: '79',
+          scratched: '4'
+        },
+        {
+          model: 'iPhone 7',
+          chargers: '88',
+          cases: '89',
+          earphones: '90',
+          scratched: '6'
+        }
+      ];
+
+      var itemsFormatted = [];
+
+      // format the data
+      itemsNotFormatted.forEach((item) => {
+        itemsFormatted.push({
+          model: item.model.replace(/,/g, ''), // remove commas to avoid errors,
+          chargers: item.chargers,
+          cases: item.cases,
+          earphones: item.earphones
+        });
+      });
+
+      var fileTitle = 'orders'; // or 'my-unique-title'
+
     </script>
   </head>
   <body>
